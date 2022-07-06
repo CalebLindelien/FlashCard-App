@@ -1,106 +1,84 @@
 import React, { useState, useEffect } from "react";
-import { Link, useHistory, useParams } from "react-router-dom";
-import { readDeck, updateDeck } from "../../utils/api/index";
+import { Link, useParams } from "react-router-dom";
+import { updateDeck, readDeck } from "../../utils/api";
 
 function EditDeck() {
-  const { deckId } = useParams();
-  const history = useHistory();
-  const initialDeckState = {
+  const [deck, setDeck] = useState({});
+  const params = useParams();
+  const deckId = params.deckId;
+  const [formData, setFormData] = useState({
     id: "",
     name: "",
     description: "",
-  };
-  const [deck, setDeck] = useState(initialDeckState);
+  });
 
   useEffect(() => {
-    async function fetchData() {
-      const abortController = new AbortController();
-      try {
-        const response = await readDeck(deckId, abortController.signal);
-        setDeck(response);
-      } catch (error) {
-        console.error(error);
-      }
-      return () => {
-        abortController.abort();
-      };
+    async function loadDeck() {
+      const response = await readDeck(deckId);
+      setDeck(response);
+      setFormData({
+        id: response.id,
+        name: response.name,
+        description: response.description,
+      });
     }
-    fetchData();
-  }, []);
+    loadDeck();
+  }, [deckId]);
 
-  function handleChange({ target }) {
-    setDeck({
-      ...deck,
+  const changeHandler = ({ target }) =>
+    setFormData({
+      ...formData,
       [target.name]: target.value,
     });
-  }
 
-  async function handleSubmit(event) {
+  const handleSubmit = (event) => {
     event.preventDefault();
-    const abortController = new AbortController();
-    const response = await updateDeck({ ...deck }, abortController.signal);
-    history.push(`/decks/${deckId}`);
-    return response;
-  }
-
-  async function handleCancel() {
-    history.push(`/decks/${deckId}`);
-  }
+    updateDeck(formData);
+  };
 
   return (
     <div>
-      <div className="col-0 p-">
-        <nav aria-label="breadcrumb">
-          <ol className="breadcrumb">
-            <li className="breadcrumb-item">
-              <Link to="/">Home</Link>
-            </li>
-            <li className="breadcrumb-item">
-              <Link to={`/decks/${deck.id}`}>{deck.name}</Link>
-            </li>
-            <li className="breadcrumb-item active">Edit Deck</li>
-          </ol>
-        </nav>
-      </div>
-      <header>
-        <h2>Edit Deck</h2>
-      </header>
-      <form onSubmit={handleSubmit}>
-        <div className="card">
-          <div className="card-body">
-            <div className="form-group">
-              <label>Name</label>
-              <input
-                id="name"
-                name="name"
-                className="form-control"
-                onChange={handleChange}
-                type="text"
-                value={deck.name}
-              />
-            </div>
-            <div className="form-group">
-              <label>Description</label>
-              <textarea
-                id="description"
-                name="description"
-                className="form-control"
-                onChange={handleChange}
-                type="text"
-                value={deck.description}
-              />
-            </div>
-            <button
-              className="btn btn-secondary mx-1"
-              onClick={() => handleCancel()}
-            >
-              Cancel
-            </button>
-            <button className="btn btn-primary mx-1" type="submit">
-              Submit
-            </button>
-          </div>
-        </div>
+      <nav aria-label="breadcrumb">
+        <ol className="breadcrumb">
+          <li className="breadcrumb-item">
+            <Link to="/">Home</Link>
+          </li>
+          <li className="breadcrumb-item">
+            <Link to={`/decks/${deck.id}`}>{deck.name}</Link>
+          </li>
+          <li className="breadcrumb-item active" aria-current="page">
+            Edit Deck
+          </li>
+        </ol>
+      </nav>
+      <h1>Edit Deck</h1>
+      <form>
+        <label htmlFor="name">Name</label> <br></br>
+        <input
+          name="name"
+          type="text"
+          placeholder="Deck Name"
+          onChange={changeHandler}
+          defaultValue={formData.name}
+        ></input>{" "}
+        <br></br>
+        <label htmlFor="description">Description</label> <br></br>
+        <textarea
+          name="description"
+          placeholder="Brief description of the deck"
+          onChange={changeHandler}
+          defaultValue={formData.description}
+        ></textarea>
+        <Link to="/">
+          <button className="btn btn-primary" onClick={handleSubmit}>
+            Submit
+          </button>
+        </Link>
+        <Link to="./">
+          <button value="Cancel" className="btn btn-secondary">
+            Cancel
+          </button>
+        </Link>
       </form>
     </div>
   );

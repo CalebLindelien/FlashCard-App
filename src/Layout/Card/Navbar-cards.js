@@ -1,7 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 
-function NavBar({ deckId, deck }) {
+function NavbarCards({ deck }) {
   return (
     <nav aria-label="breadcrumb">
       <ol className="breadcrumb">
@@ -9,12 +9,14 @@ function NavBar({ deckId, deck }) {
           <Link to="/">Home</Link>
         </li>
         <li className="breadcrumb-item">
-          <Link to={`/decks/${deckId}`}>{deck.name}</Link>
+          <Link to={`/decks/${deck.id}`}>{deck.name}</Link>
         </li>
-        <li className="breadcrumb-item active">Study</li>
+        <li className="breadcrumb-item active" aria-current="page">
+          Study
+        </li>
       </ol>
     </nav>
   );
 }
 
-export default NavBar;
+export default NavbarCards;
